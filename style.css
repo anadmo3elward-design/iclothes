@@ -1,0 +1,55 @@
+:root {
+    --bs-primary: #133D7A;
+    --bs-primary-rgb: 19, 61, 122;
+    --primary-color: #133D7A;
+    --secondary-color: #316dc7;
+    --accent-color: #FF5C58;
+    --bs-font-sans-serif: 'Cairo', sans-serif;
+}
+
+body {
+    font-family: var(--bs-font-sans-serif);
+    background: linear-gradient(135deg, #F0F4F8 0%, #D9E2EC 100%);
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.bg-primary {
+    background-color: var(--primary-color) !important;
+}
+
+.btn-primary {
+    background: linear-gradient(to left, var(--primary-color), var(--secondary-color));
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-outline-primary {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+/* Base custom card override for glass effect if we use .glass-card custom class along with .card */
+.glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    box-shadow: 0 8px 24px 0 rgba(19, 61, 122, 0.15);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+/* Remove old conflicting class overrides and let bootstrap handle the rest */
