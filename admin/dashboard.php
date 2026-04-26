@@ -10,10 +10,31 @@ $totalUsers = $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 
 // Recent Orders
 $recentOrders = $pdo->query("SELECT * FROM `order` ORDER BY OrderDate DESC LIMIT 5")->fetchAll();
+
+// Out of stock products
+$outOfStockItems = $pdo->query("
+    SELECT i.Name as ItemName, s.Name as Size, c.Name as Color 
+    FROM inventory inv
+    JOIN item i ON inv.ItemID = i.ItemID
+    JOIN size s ON inv.SizeID = s.SizeID
+    JOIN color c ON inv.ColorID = c.ColorID
+    WHERE inv.Amount <= 0
+")->fetchAll();
 ?>
 
 <div class="container my-5">
     <h1 class="text-primary fw-bold mb-4 border-bottom pb-2">لوحة التحكم</h1>
+
+    <?php if (!empty($outOfStockItems)): ?>
+        <div class="alert alert-danger shadow-sm border-0 mb-4" role="alert">
+            <h5 class="alert-heading fw-bold mb-2"><i class="fas fa-exclamation-triangle ms-2"></i>تنبيه: منتجات نفدت كميتها!</h5>
+            <ul class="mb-0">
+                <?php foreach ($outOfStockItems as $outItem): ?>
+                    <li>المنتج: <strong><?= htmlspecialchars($outItem['ItemName']) ?></strong> (<?= htmlspecialchars($outItem['Size']) ?> - <?= htmlspecialchars($outItem['Color']) ?>)</li>
+                <?php endforeach; ?>
+            </ul>
+        </div>
+    <?php endif; ?>
 
     <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 mt-2">
         <div class="col">

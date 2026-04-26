@@ -31,9 +31,17 @@ require_once 'header.php';
             $priceStmt = $pdo->prepare("SELECT MIN(Price) FROM inventory WHERE ItemID = ?");
             $priceStmt->execute([$item['ItemID']]);
             $minPrice = $priceStmt->fetchColumn();
+
+            // Get Total Quantity
+            $qtyStmt = $pdo->prepare("SELECT SUM(Amount) FROM inventory WHERE ItemID = ?");
+            $qtyStmt->execute([$item['ItemID']]);
+            $totalQty = $qtyStmt->fetchColumn() ?: 0;
             ?>
             <div class="col-md-4 col-sm-6">
-                <div class="card h-100 shadow-sm border-0 product-card">
+                <div class="card h-100 shadow-sm border-0 product-card position-relative">
+                    <?php if ($totalQty <= 0): ?>
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2 px-3 py-2 fs-6 shadow-sm z-1">نفدت الكمية</span>
+                    <?php endif; ?>
                     <img src="<?= $imgDisplay ?>" alt="<?= htmlspecialchars($item['Name']) ?>" class="card-img-top" style="height: 250px; object-fit: cover;">
                     <div class="card-body text-center">
                         <h5 class="card-title"><?= htmlspecialchars($item['Name']) ?></h5>

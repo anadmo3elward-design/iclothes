@@ -41,7 +41,10 @@ $price = $inventory[0]['Price'] ?? 0;
     <div class="card shadow-sm border-0 p-lg-5 p-3">
         <div class="row g-5">
             <!-- Product Images -->
-            <div class="col-md-6">
+            <div class="col-md-6 position-relative">
+                <?php if (empty($inventory)): ?>
+                    <span class="badge bg-danger position-absolute top-0 start-0 m-4 px-3 py-2 fs-5 shadow-sm z-1" style="transform: translate(-10px, 10px);">نفدت الكمية</span>
+                <?php endif; ?>
                 <img id="mainImage" src="<?= $mainImg ?>"
                     class="img-fluid rounded shadow-sm w-100" style="object-fit: cover; max-height: 500px;"
                     alt="<?= htmlspecialchars($item['Name']) ?>">
