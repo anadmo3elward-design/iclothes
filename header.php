@@ -63,24 +63,55 @@ if (isset($pdo)) {
                     <li class="nav-item">
                         <a class="nav-link" href="shop.php">المتجر</a>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                    <li class="nav-item dropdown" id="mainCategoryDropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             التصنيفات
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item fw-bold text-primary" href="shop.php">الكل</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <?php foreach($categories as $cat): ?>
-                                <li><a class="dropdown-item fw-bold" href="shop.php?category=<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Name']) ?></a></li>
                                 <?php if(!empty($cat['SubCategories'])): ?>
-                                    <?php foreach($cat['SubCategories'] as $sub): ?>
-                                        <li><a class="dropdown-item text-muted ps-4" href="shop.php?sub_category=<?= $sub['SubCategoryID'] ?>" style="font-size: 0.9em;">- <?= htmlspecialchars($sub['Name']) ?></a></li>
-                                    <?php endforeach; ?>
+                                    <li class="dropend">
+                                        <a class="dropdown-item fw-bold dropdown-toggle" href="shop.php?category=<?= $cat['CategoryID'] ?>" data-bs-toggle="dropdown" aria-expanded="false"><?= htmlspecialchars($cat['Name']) ?></a>
+                                        <ul class="dropdown-menu shadow-sm border-0">
+                                            <?php foreach($cat['SubCategories'] as $sub): ?>
+                                                <li><a class="dropdown-item" href="shop.php?sub_category=<?= $sub['SubCategoryID'] ?>"><?= htmlspecialchars($sub['Name']) ?></a></li>
+                                            <?php endforeach; ?>
+                                        </ul>
+                                    </li>
+                                <?php else: ?>
+                                    <li><a class="dropdown-item fw-bold" href="shop.php?category=<?= $cat['CategoryID'] ?>"><?= htmlspecialchars($cat['Name']) ?></a></li>
                                 <?php endif; ?>
                                 <li><hr class="dropdown-divider"></li>
                             <?php endforeach; ?>
                         </ul>
                     </li>
+                    <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            // Use Bootstrap's Dropdown JS for hover
+                            let dropends = document.querySelectorAll('.dropend');
+                            dropends.forEach(function(dropend) {
+                                let toggle = dropend.querySelector('[data-bs-toggle="dropdown"]');
+                                dropend.addEventListener('mouseenter', function() {
+                                    if(typeof bootstrap !== 'undefined') {
+                                        bootstrap.Dropdown.getOrCreateInstance(toggle).show();
+                                    }
+                                });
+                                dropend.addEventListener('mouseleave', function() {
+                                    if(typeof bootstrap !== 'undefined') {
+                                        bootstrap.Dropdown.getOrCreateInstance(toggle).hide();
+                                    }
+                                });
+                                // Allow click to navigate
+                                toggle.addEventListener('click', function(e) {
+                                    if(this.href && this.href !== '#' && !this.href.includes('javascript:')) {
+                                        window.location.href = this.href;
+                                    }
+                                });
+                            });
+                        });
+                    </script>
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item">
                             <a class="nav-link" href="cart.php">السلة <span class="badge bg-danger rounded-pill"><?= $cart_count ?></span></a>
