@@ -26,14 +26,23 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['apply_coupon'])) {
     $coupon = $stmt->fetch();
 
         if ($coupon) {
-            $_SESSION['checkout_coupon'] = [
-                'id' => $coupon['CouponID'],
-                'code' => $coupon['CouponCode'],
-                'discount' => $coupon['DiscountAmount']
-            ];
-            $couponSuccess = "تم تطبيق الخصم بنجاح!";
+            $today = date('Y-m-d');
+            if ($coupon['StartDate'] && $today < $coupon['StartDate']) {
+                $couponError = "صلاحية هذا الكوبون لم تبدأ بعد.";
+            } elseif ($coupon['EndDate'] && $today > $coupon['EndDate']) {
+                $couponError = "هذا الكوبون منتهي الصلاحية.";
+            } else {
+                $_SESSION['checkout_coupon'] = [
+                    'id' => $coupon['CouponID'],
+                    'code' => $coupon['CouponCode'],
+                    'discount' => $coupon['DiscountAmount'],
+                    'start' => $coupon['StartDate'],
+                    'end' => $coupon['EndDate']
+                ];
+                $couponSuccess = "تم تطبيق الخصم بنجاح!";
+            }
         } else {
-            $couponError = "كود الخصم غير صحيح أو منتهي الصلاحية.";
+            $couponError = "كود الخصم غير صحيح.";
         }
     }
 }
@@ -70,6 +79,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['confirm_order'])) {
         // Apply discount if exists
         $couponId = null;
         if (isset($_SESSION['checkout_coupon'])) {
+            $today = date('Y-m-d');
+            $start = $_SESSION['checkout_coupon']['start'] ?? null;
+            $end = $_SESSION['checkout_coupon']['end'] ?? null;
+            
+            if (($start && $today < $start) || ($end && $today > $end)) {
+                unset($_SESSION['checkout_coupon']);
+                throw new Exception("الكوبون المطبق منتهي الصلاحية أو لم يعد صالحاً. يرجى المحاولة مرة أخرى.");
+            }
+            
             $couponId = $_SESSION['checkout_coupon']['id'];
             $discount = $_SESSION['checkout_coupon']['discount'];
             $totalPrice = $totalPrice - ($totalPrice * ($discount / 100));

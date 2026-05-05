@@ -13,15 +13,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_coupon'])) {
     if (empty($code) || $discount <= 0 || $discount > 100) {
         $error = "الرجاء إدخال كود صالح ونسبة خصم بين 1 و 100.";
     } else {
-        try {
-            $stmt = $pdo->prepare("INSERT INTO copouns (CouponCode, DiscountAmount, AddedBy) VALUES (?, ?, ?)");
-            $stmt->execute([$code, $discount, $_SESSION['admin_id']]);
-            $success = "تم إضافة كود الخصم بنجاح.";
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) { // UNIQUE constraint violation
-                $error = "هذا الكود موجود مسبقاً.";
-            } else {
-                $error = "حدث خطأ غير متوقع.";
+        $start_date = !empty($_POST['start_date']) ? $_POST['start_date'] : null;
+        $end_date = !empty($_POST['end_date']) ? $_POST['end_date'] : null;
+        
+        if ($start_date && $end_date && $end_date < $start_date) {
+            $error = "تاريخ الانتهاء لا يمكن أن يكون قبل تاريخ البداية.";
+        } else {
+            try {
+                $stmt = $pdo->prepare("INSERT INTO copouns (CouponCode, DiscountAmount, StartDate, EndDate, AddedBy) VALUES (?, ?, ?, ?, ?)");
+                $stmt->execute([$code, $discount, $start_date, $end_date, $_SESSION['admin_id']]);
+                $success = "تم إضافة كود الخصم بنجاح.";
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000) { // UNIQUE constraint violation
+                    $error = "هذا الكود موجود مسبقاً.";
+                } else {
+                    $error = "حدث خطأ غير متوقع.";
+                }
             }
         }
     }
@@ -63,13 +70,21 @@ $coupons = $stmt->fetchAll();
         <?php endif; ?>
 
         <form method="POST" class="row g-3 align-items-end">
-            <div class="col-md-6 col-sm-12">
+            <div class="col-md-3 col-sm-12">
                 <label class="form-label fw-bold">كود الخصم (أحرف إنجليزية/أرقام)</label>
                 <input type="text" name="code" class="form-control" required placeholder="مثال: SUMMER20" style="text-transform: uppercase;" pattern="[A-Za-z0-9]+" title="أحرف وأرقام إنجليزية فقط">
             </div>
-            <div class="col-md-4 col-sm-12">
+            <div class="col-md-2 col-sm-12">
                 <label class="form-label fw-bold">نسبة الخصم (%)</label>
-                <input type="number" name="discount" class="form-control" min="1" max="100" step="0.01" required placeholder="العلامة بدون % (مثال 20)">
+                <input type="number" name="discount" class="form-control" min="1" max="100" step="0.01" required placeholder="مثال 20">
+            </div>
+            <div class="col-md-2 col-sm-12">
+                <label class="form-label fw-bold text-muted" style="font-size: 0.9em;">تاريخ البداية (اختياري)</label>
+                <input type="date" name="start_date" class="form-control">
+            </div>
+            <div class="col-md-3 col-sm-12">
+                <label class="form-label fw-bold text-muted" style="font-size: 0.9em;">تاريخ الانتهاء (اختياري)</label>
+                <input type="date" name="end_date" class="form-control">
             </div>
             <div class="col-md-2 col-sm-12">
                 <button type="submit" name="add_coupon" class="btn btn-primary w-100"><i class="fas fa-plus ms-1"></i> إضافة</button>
@@ -85,6 +100,7 @@ $coupons = $stmt->fetchAll();
                         <th>#</th>
                         <th>كود الخصم</th>
                         <th>نسبة الخصم</th>
+                        <th>الصلاحية</th>
                         <th>أُضيف بواسطة</th>
                         <th>إجراءات</th>
                     </tr>
@@ -101,6 +117,24 @@ $coupons = $stmt->fetchAll();
                                     <span class="badge bg-danger fs-6 px-3 py-2">
                                         <?= floatval($c['DiscountAmount']) ?>%
                                     </span>
+                                </td>
+                                <td>
+                                    <?php
+                                    $validFrom = $c['StartDate'] ? date('Y-m-d', strtotime($c['StartDate'])) : 'دائماً';
+                                    $validTo = $c['EndDate'] ? date('Y-m-d', strtotime($c['EndDate'])) : 'دائماً';
+                                    $today = date('Y-m-d');
+                                    $statusClass = 'bg-success';
+                                    $statusText = 'فعال';
+                                    if ($c['StartDate'] && $today < $c['StartDate']) {
+                                        $statusClass = 'bg-warning text-dark';
+                                        $statusText = 'لم يبدأ بعد';
+                                    } elseif ($c['EndDate'] && $today > $c['EndDate']) {
+                                        $statusClass = 'bg-secondary';
+                                        $statusText = 'منتهي';
+                                    }
+                                    ?>
+                                    <div class="small">من: <span dir="ltr"><?= $validFrom ?></span> <br>إلى: <span dir="ltr"><?= $validTo ?></span></div>
+                                    <span class="badge <?= $statusClass ?> mt-1"><?= $statusText ?></span>
                                 </td>
                                 <td><?= htmlspecialchars($c['UserName'] ?: 'غير معروف') ?></td>
                                 <td>

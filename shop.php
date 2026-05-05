@@ -70,7 +70,7 @@ require_once 'header.php';
                     <?php if ($totalQty <= 0): ?>
                         <span class="badge bg-danger position-absolute top-0 start-0 m-2 px-3 py-2 fs-6 shadow-sm z-1">نفدت الكمية</span>
                     <?php endif; ?>
-                    <img src="<?= $imgDisplay ?>" alt="<?= htmlspecialchars($item['Name']) ?>" class="card-img-top" style="height: 250px; object-fit: cover;">
+                    <img src="<?= $imgDisplay ?>" alt="<?= htmlspecialchars($item['Name']) ?>" class="card-img-top" style="height: 280px; object-fit: cover;">
                     <div class="card-body d-flex flex-column text-center">
                         <h5 class="card-title"><?= htmlspecialchars($item['Name']) ?></h5>
                         <p class="card-text fw-bold text-primary mb-2"><?= $displayPrice ?> شيكل</p>
